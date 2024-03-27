@@ -23,5 +23,3 @@ class Test_Sauce_Valid_Login:
         print(f"login dogrulaması texti: {assertLogin.text}")
         resault=assertLogin.text=="Swag Labs"
         print(f"Test Sonucu: {resault}")
-testClass=Test_Sauce_Valid_Login()
-testClass.test_valid_login()
