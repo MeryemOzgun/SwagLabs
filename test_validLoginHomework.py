@@ -6,6 +6,7 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.action_chains import ActionChains
 import pytest
 import openpyxl
+from constants.globalConstants import *
 
 
 class Test_ValidLoginHomework:
@@ -13,28 +14,33 @@ class Test_ValidLoginHomework:
     def setup_method(self):
         self.driver = webdriver.Chrome()
         self.driver.maximize_window()
-        self.driver.get("https://www.saucedemo.com/")
+        self.driver.get(BASE_URL)
         
     def teardown_method(self):
         self.driver.quit()
 
     def getDataFromExcel(self):
-        wb = openpyxl.load_workbook("C:\\Users\\my\\Desktop\\seleniumProje\\data\\veriler.xlsx")
-        sheet = wb.active
+        excelFile = openpyxl.load_workbook(validLoginExcelFilePath)
+        sheet = excelFile["Sheet1"]
+        rows= sheet.max_row
         data = []
-        for row in sheet.iter_rows(values_only=True):
-            username = row[0]
-            password = row[1]
+        for i in range(2,rows):
+            username = sheet.cell(i,1).value
+            password = sheet.cell(İ,2).value
             data.append((username, password))
         return data
 
-    @pytest.mark.parametrize("username, password", self.getDataFromExcel())
+    @pytest.mark.parametrize("username, password", getDataFromExcel())
     def test_valid_login(self, username, password):
-        userNameInput = WebDriverWait(self.driver, 5).until(ec.visibility_of_element_located((By.ID, "user-name")))
-        passwordInput = WebDriverWait(self.driver, 5).until(ec.visibility_of_element_located((By.ID, "password")))
+        userNameInput = self.waitForElementVisible((By.ID,username_id))
+        passwordInput = self.waitForElementVisible((By.ID,password_id))
         userNameInput.send_keys(username)
         passwordInput.send_keys(password)
-        loginButton = WebDriverWait(self.driver, 5).until(ec.visibility_of_element_located((By.ID, "login-button")))
+        loginButton = self.waitForElementVisible((By.ID,login_button_id))
         loginButton.click()
-        baslik = WebDriverWait(self.driver, 5).until(ec.visibility_of_element_located((By.XPATH, "//*[@id='header_container']/div[1]/div[2]/div")))
+        baslik =self.waitForElementVisible((By.XPATH,baslik_xpath))
         assert baslik.text == "Swag Labs"
+
+
+    def waitForElementVisible(self,locator,timeout=5):
+     WebDriverWait(self.driver,timeout).until(ec.visibility_of_element_located(locator))
